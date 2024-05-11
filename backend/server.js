@@ -1,6 +1,8 @@
 const express = require("express");
 const connectDatabase = require("./db");
-const app = express();
+const app = require("./app");
+
+app.use(express.json());
 
 if (process.env.NODE_ENV !== "PRODUCTION") {
   require("dotenv").config({
