@@ -30,7 +30,7 @@ const SongCard = ({ data }) => {
       `}
     >
       <Image
-        src={data.imageUrl.url}
+        src={data.image.url}
         width={250}
         height={200}
         css={css`

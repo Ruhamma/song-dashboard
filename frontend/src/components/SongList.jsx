@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 
 import { css } from "@emotion/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { IoIosSearch } from "react-icons/io";
 import { AiOutlineSearch } from "react-icons/ai";
@@ -11,6 +11,13 @@ import SongForm from "./SongForm";
 import { Image } from "rebass";
 import SongCard from "./SongCard";
 import { MdDeleteOutline } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchSongsRequest,
+  getSongsSuccess,
+  getSongsFailure,
+} from "../store/slices/songSlice";
+import { fetchSongsApi } from "../store/api/songApi";
 const SongFormOverlay = css`
   position: fixed;
   top: 0;
@@ -163,7 +170,10 @@ const SongList = () => {
   const [display, setDisplay] = useState("list");
   const [showPopup, setShowPopup] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
+  const dispatch = useDispatch();
+  const songs = useSelector((state) => state.song.songs);
+  const loading = useSelector((state) => state.song.loading);
+  const error = useSelector((state) => state.song.error);
   const tooglePopup = () => {
     setIsPopupOpen(false);
     console.log(isPopupOpen);
@@ -172,6 +182,29 @@ const SongList = () => {
   const toggleForm = () => {
     setIsOpen(!isOpen);
   };
+
+  useEffect(() => {
+    const fetchSongs = async () => {
+      dispatch(fetchSongsRequest());
+      try {
+        const response = await fetchSongsApi();
+        dispatch(getSongsSuccess(response));
+      } catch (err) {
+        dispatch(getSongsFailure(err.message));
+      }
+    };
+
+    fetchSongs();
+  }, [dispatch]);
+  // Render loading state
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Render error state
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
   return (
     <div>
       {/* Search and upload section */}
@@ -408,6 +441,7 @@ const SongList = () => {
 
       {/* Song list section */}
       <div>
+        
         <div
           className="header"
           css={css`
@@ -479,7 +513,7 @@ const SongList = () => {
         />
         {display === "list" ? (
           <>
-            {dummySongData.map((song, key) => (
+            {songs.map((song, key) => (
               <div
                 key={key}
                 css={css`
@@ -520,7 +554,7 @@ const SongList = () => {
                   <Image
                     width={90}
                     height={80}
-                    src="/images/pop.jpg"
+                    src={song.image.url}
                     alt="Song Image"
                     css={css`
                       border-radius: 20px;
@@ -632,7 +666,7 @@ const SongList = () => {
               }
             `}
           >
-            {dummySongData.map((song, key) => (
+            {songs.map((song, key) => (
               <div
                 onClick={() => {
                   setSelectedSong(song);
@@ -672,7 +706,7 @@ const SongList = () => {
             <div>
               <Image
                 height={280}
-                src={"/images/jazz.jpg"}
+                src={selectedSong.image.url}
                 alt="Song Image"
                 css={css`
                   border-radius: 20px;

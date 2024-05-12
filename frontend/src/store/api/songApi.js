@@ -2,7 +2,7 @@ import axios from "axios";
 
 const server = "http://localhost:5000/api/songs";
 
-export const fetchSongs = async () => {
+export const fetchSongsApi = async () => {
   try {
     const response = await axios.get(server);
     return response.data;

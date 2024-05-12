@@ -6,9 +6,10 @@ const cloudinary = require("cloudinary");
 //Get all songs
 songRouter.get("/", async (req, res) => {
   try {
-    const song = Song.find();
+    const song =await Song.find();
     res.json(song);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
