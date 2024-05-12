@@ -1,6 +1,8 @@
 const express = require("express");
 const connectDatabase = require("./db");
 const app = require("./app");
+const cloudinary = require("cloudinary");
+
 
 app.use(express.json());
 
@@ -9,6 +11,16 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
     path: "./.env",
   });
 }
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
+
+
+
+
 
 connectDatabase()
   .then(() => {

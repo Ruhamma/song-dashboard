@@ -10,7 +10,12 @@ const SongSchema = mongoose.Schema({
     required: true,
   },
   imageUrl: {
-    type: String,
+    public_id: {
+      type: String,
+    },
+    url: {
+      type: String,
+    },
   },
   genre: {
     type: String,

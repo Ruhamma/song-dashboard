@@ -32,9 +32,22 @@ songRouter.get("/:id", async (req, res) => {
 
 //Create a song
 songRouter.post("/", async (req, res) => {
-  const song = new Song(req.body);
   try {
-    const newSong = await song.save();
+    if (!req.body.image) {
+      return res.status(400).json({ message: "No image provided" });
+    }
+
+    const result = await cloudinary.uploader.upload(req.body.image, {
+      folder: "songs",
+    });
+    const songData = req.body;
+
+    songData.imageUrl = {
+      public_id: result.public_id,
+      url: result.secure_url,
+    };
+
+    const newSong = await songData.save();
     res.status(201).json(newSong);
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
