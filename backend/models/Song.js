@@ -9,7 +9,11 @@ const SongSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  imageUrl: {
+  albumTitle: {
+    type: String,
+    required: true,
+  },
+  image: {
     public_id: {
       type: String,
     },
@@ -22,9 +26,6 @@ const SongSchema = mongoose.Schema({
   },
   releaseYear: {
     type: Number,
-  },
-  audioUrl: {
-    type: String,
   },
 });
 

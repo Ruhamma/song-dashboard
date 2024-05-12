@@ -27,6 +27,10 @@ const Nav = () => {
         padding-left: 5rem;
         padding-right: 5rem;
         transition: background-color 0.3s ease-in-out;
+        @media (max-width: 768px) {
+          justify-content: center;
+          padding: 0 0.5rem;
+        }
       `}
     >
       <div
@@ -46,11 +50,6 @@ const Nav = () => {
           Music Library
         </p>
       </div>
-      <DayNightToggle
-        onChange={() => setIsDarkMode(!isDarkMode)}
-        checked={isDarkMode}
-        size={30}
-      />
     </div>
   );
 };

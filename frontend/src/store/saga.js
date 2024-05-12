@@ -3,9 +3,13 @@ import {
   fetchSongsRequest,
   getSongsFailure,
   getSongsSuccess,
+  submitSongFailure,
+  submitSongRequest,
+  submitSongSuccess
+
 } from "./slices/songSlice";
 
-import { fetchSongs } from "./api/songApi";
+import { fetchSongs,submitSong } from "./api/songApi";
 
 function* fetchSongsHandler() {
   try {
@@ -15,8 +19,19 @@ function* fetchSongsHandler() {
     yield put(getSongsFailure(err.toString()));
   }
 }
+
+function* submitSongHandler(action) {
+  try {
+    const response = yield call(submitSong, action.payload);
+    yield put(submitSongSuccess(response));
+  } catch (err) {
+    yield put(submitSongFailure(err.toString()));
+  }
+}
 function* songWatcher() {
   yield takeEvery(fetchSongsRequest.type, fetchSongsHandler);
+   yield takeEvery(submitSongRequest.type, submitSongHandler);
+  
 }
 
 export default function* rootSaga() {

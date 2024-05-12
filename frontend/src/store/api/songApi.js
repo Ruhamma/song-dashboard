@@ -11,3 +11,11 @@ export const fetchSongs = async () => {
   }
 };
 
+export const submitSong = async (songData) => {
+  try {
+    const response = await axios.post(server, songData);
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+};

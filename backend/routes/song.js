@@ -2,7 +2,7 @@ const express = require("express");
 const songRouter = express.Router();
 const Song = require("../models/Song");
 const { Error } = require("mongoose");
-
+const cloudinary = require("cloudinary");
 //Get all songs
 songRouter.get("/", async (req, res) => {
   try {
@@ -36,18 +36,20 @@ songRouter.post("/", async (req, res) => {
     if (!req.body.image) {
       return res.status(400).json({ message: "No image provided" });
     }
+    let imageData = req.body.image;
 
-    const result = await cloudinary.uploader.upload(req.body.image, {
+    const result = await cloudinary.uploader.upload(imageData, {
       folder: "songs",
     });
-    const songData = req.body;
 
-    songData.imageUrl = {
+    console.log(result);
+    const imageLink = {
       public_id: result.public_id,
       url: result.secure_url,
     };
-
-    const newSong = await songData.save();
+    const songData = req.body;
+    songData.image = imageLink;
+    const newSong = await Song.create(songData);
     res.status(201).json(newSong);
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
