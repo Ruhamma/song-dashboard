@@ -6,7 +6,7 @@ const cloudinary = require("cloudinary");
 //Get all songs
 songRouter.get("/", async (req, res) => {
   try {
-    const song =await Song.find();
+    const song = await Song.find();
     res.json(song);
   } catch (error) {
     console.error(error);
@@ -73,16 +73,17 @@ songRouter.put("/:id", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 //Delete a song
 
 songRouter.delete("/:id", async (req, res) => {
-  const { id } = req.params;
   try {
     const song = await Song.findByIdAndDelete(id);
     if (!song) {
       return res.status(404).json({ message: "Song does not exist" });
     }
-    res.json({ message: "Song deleted successfully" });
+    const result = await cloudinary.v2.uploader.destroy(song.image.public_id);
+    res.json({ deletedSongId: id });
   } catch (err) {
     if (err instanceof Error.CastError) {
       return res.status(400).json({ message: "Invalid song ID" });

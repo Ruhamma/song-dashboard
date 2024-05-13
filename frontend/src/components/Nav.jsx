@@ -5,18 +5,6 @@ import DayNightToggle from "react-day-and-night-toggle";
 import { FaMusic } from "react-icons/fa6";
 
 const Nav = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const body = document.body;
-    const toggleTheme = () => {
-      body.classList.toggle("dark-theme");
-    };
-
-    toggleTheme();
-
-    return () => window.removeEventListener("storage", toggleTheme);
-  }, [isDarkMode]);
   return (
     <div
       css={css`

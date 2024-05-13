@@ -16,15 +16,21 @@ import {
   fetchSongsRequest,
   getSongsSuccess,
   getSongsFailure,
+  deleteSongRequest,
+  deleteSongSuccess,
+  deleteSongFailure,
+  updateSongRequest,
+  updateSongSuccess,
+  updateSongFailure,
 } from "../store/slices/songSlice";
-import { fetchSongsApi } from "../store/api/songApi";
+import { deleteSong, fetchSongsApi, updateSong } from "../store/api/songApi";
 const SongFormOverlay = css`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+  background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent overlay */
   transition: opacity 0.2s ease-in-out;
   opacity: 0;
   cursor: pointer;
@@ -164,19 +170,30 @@ const dummySongData = [
     releaseYear: 1971,
   },
 ];
+
+const initialState = {
+  title: "",
+  artist: "",
+  albumTitle: "",
+  releaseYear: 2024,
+  genre: "pop",
+};
 const SongList = () => {
   const [selectedSong, setSelectedSong] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [display, setDisplay] = useState("list");
   const [showPopup, setShowPopup] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [editSong, setEditSong] = useState(null);
+  const [editSongValues, setEditSongValues] = useState(initialState);
+  const [editImages, setEditImages] = useState(null);
   const dispatch = useDispatch();
   const songs = useSelector((state) => state.song.songs);
   const loading = useSelector((state) => state.song.loading);
   const error = useSelector((state) => state.song.error);
   const tooglePopup = () => {
     setIsPopupOpen(false);
-    console.log(isPopupOpen);
   };
 
   const toggleForm = () => {
@@ -196,15 +213,67 @@ const SongList = () => {
 
     fetchSongs();
   }, [dispatch]);
-  // Render loading state
+
+  const handleEdit = (song) => {
+    setEditSong(song);
+    setEditSongValues({
+      id: song._id,
+      title: song.title,
+      artist: song.artist,
+      albumTitle: song.albumTitle,
+      releaseYear: song.releaseYear,
+      genre: song.genre,
+    });
+    setEditImages(song.image);
+  };
+
+  
+
+  const handleSaveEdit = async () => {
+    const songData = {
+      title: editSongValues.title,
+      artist: editSongValues.artist,
+      albumTitle: editSongValues.albumTitle,
+      releaseYear: editSongValues.releaseYear,
+      genre: editSongValues.genre,
+      image: editImages,
+    };
+    try {
+      dispatch(updateSongRequest());
+      const response = await updateSong(editSongValues.id, songData);
+      dispatch(updateSongSuccess(response));
+      console.log("Song uploaded successfully!");
+      setEditSong(null);
+    } catch (err) {
+      dispatch(updateSongFailure(err.toString()));
+    }
+  };
+  const handleCancelEdit = () => {
+    setEditSong(null);
+  };
+  const handleDelete = async (id) => {
+    try {
+      dispatch(deleteSongRequest());
+      const response = await deleteSong(id);
+      dispatch(deleteSongSuccess(response));
+
+      console.log("Song deleted successfully!");
+    } catch (err) {
+      dispatch(deleteSongFailure(err.toString()));
+    }
+  };
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  // Render error state
   if (error) {
     return <div>Error: {error}</div>;
   }
+  const filteredSongs = selectedCategory
+    ? songs.filter(
+        (song) => song.genre.toLowerCase() === selectedCategory.toLowerCase()
+      )
+    : songs;
   return (
     <div>
       {/* Search and upload section */}
@@ -311,13 +380,14 @@ const SongList = () => {
               font-size: 1rem;
               width: fit-content;
               border-radius: 25px;
-              border: 1px solid black;
+              border: 1px solid white;
+              color: white;
               @media (max-width: 548px) {
                 display: none;
               }
             `}
           >
-            <AiOutlineSearch color="black" />
+            <AiOutlineSearch color="white" />
             <input
               type="text"
               id="search"
@@ -326,6 +396,8 @@ const SongList = () => {
                 border: none;
                 outline: none;
                 padding: 0.3rem;
+                background-color: black;
+                color: white;
               `}
             />
           </div>
@@ -340,6 +412,10 @@ const SongList = () => {
               width: fit-content;
               border-radius: 25px;
               cursor: pointer;
+              color: black;
+              background: rgba(255, 255, 255, 0.9);
+              backdrop-filter: blur(13px);
+              -webkit-backdrop-filter: blur(13px);
             `}
             onClick={toggleForm}
           >
@@ -379,11 +455,17 @@ const SongList = () => {
           margin-top: 40px;
         `}
       >
-        <div css={CategoryContainer({ backgroundImageUrl: "/images/pop.jpg" })}>
+        <div
+          css={CategoryContainer({ backgroundImageUrl: "/images/pop.jpg" })}
+          onClick={() => setSelectedCategory("Pop")}
+        >
           <div css={CategoryOverlay} />
           <p
             css={css`
               z-index: 2;
+              @media (max-width: 548px) {
+                font-size: 0.8rem;
+              }
             `}
           >
             Pop
@@ -391,11 +473,15 @@ const SongList = () => {
         </div>
         <div
           css={CategoryContainer({ backgroundImageUrl: "/images/jazz.jpg" })}
+          onClick={() => setSelectedCategory("Jazz")}
         >
           <div css={CategoryOverlay} />
           <p
             css={css`
               z-index: 2;
+              @media (max-width: 548px) {
+                font-size: 0.8rem;
+              }
             `}
           >
             Jazz
@@ -403,11 +489,15 @@ const SongList = () => {
         </div>
         <div
           css={CategoryContainer({ backgroundImageUrl: "/images/randb.jpg" })}
+          onClick={() => setSelectedCategory("R&B")}
         >
           <div css={CategoryOverlay} />
           <p
             css={css`
               z-index: 2;
+              @media (max-width: 548px) {
+                font-size: 0.8rem;
+              }
             `}
           >
             R&B
@@ -415,11 +505,15 @@ const SongList = () => {
         </div>
         <div
           css={CategoryContainer({ backgroundImageUrl: "/images/country.jpg" })}
+          onClick={() => setSelectedCategory("Country")}
         >
           <div css={CategoryOverlay} />
           <p
             css={css`
               z-index: 2;
+              @media (max-width: 548px) {
+                font-size: 0.8rem;
+              }
             `}
           >
             Country
@@ -427,11 +521,15 @@ const SongList = () => {
         </div>
         <div
           css={CategoryContainer({ backgroundImageUrl: "/images/rock.jpg" })}
+          onClick={() => setSelectedCategory("Rock")}
         >
           <div css={CategoryOverlay} />
           <p
             css={css`
               z-index: 2;
+              @media (max-width: 548px) {
+                font-size: 0.8rem;
+              }
             `}
           >
             Rock
@@ -440,8 +538,20 @@ const SongList = () => {
       </div>
 
       {/* Song list section */}
-      <div>
-        
+      <div
+        css={css`
+          background: rgba(12, 15, 10, 0.4);
+          backdrop-filter: blur(13px);
+          -webkit-backdrop-filter: blur(13px);
+          border-radius: 10px;
+          width: 90%;
+          padding-top: 10px;
+          margin: auto;
+          @media (max-width: 548px) {
+            width: 95%;
+          }
+        `}
+      >
         <div
           className="header"
           css={css`
@@ -452,6 +562,7 @@ const SongList = () => {
             padding-left: 6rem;
             padding-right: 5rem;
             margin-top: 10px;
+            ${display === "cards" ? "display: none;" : ""}
           `}
         >
           <p>Name</p>
@@ -509,11 +620,12 @@ const SongList = () => {
             @media (max-width: 548px) {
               margin: 1rem 2rem;
             }
+            ${display === "cards" ? "display: none;" : ""}
           `}
         />
         {display === "list" ? (
           <>
-            {songs.map((song, key) => (
+            {filteredSongs.map((song, key) => (
               <div
                 key={key}
                 css={css`
@@ -528,28 +640,33 @@ const SongList = () => {
                   font-size: 0.9rem;
                   margin-left: 5rem;
                   margin-right: 5rem;
-                  cursor: pointer;
                   transition: background-color 0.4s ease-in-out;
-
                   &:hover {
-                    background-color: #f4f4f9;
+                    background-color: #282828;
                     transition: background-color 0.4s ease-in-out;
                   }
                   @media (max-width: 548px) {
                     margin: 1rem 1rem;
                   }
                 `}
-                onClick={() => {
-                  setSelectedSong(song);
-                  setIsPopupOpen(true);
-                }}
               >
                 <div
                   css={css`
                     display: flex;
                     align-items: center;
                     gap: 10px;
+                    cursor: pointer;
+                    transition: scale 0.4s ease-in-out;
+
+                    &:hover {
+                      scale: 1.05;
+                      transition: scale 0.4s ease-in-out;
+                    }
                   `}
+                  onClick={() => {
+                    setSelectedSong(song);
+                    setIsPopupOpen(true);
+                  }}
                 >
                   <Image
                     width={90}
@@ -569,7 +686,7 @@ const SongList = () => {
                       css={css`
                         font-size: 1rem;
                         font-weight: bold;
-                        color: black;
+                        color: white;
                       `}
                     >
                       {song.title}
@@ -623,14 +740,23 @@ const SongList = () => {
                       display: flex;
                       gap: 10px;
                       font-size: 1rem;
-                      color: black;
+                      color: white;
                     `}
                   >
                     <CiEdit
                       size={20}
                       css={css`
                         cursor: pointer;
+                        border-radius: 50%;
+                        &:hover {
+                          scale: 1.1;
+                          transition: scale 0.4s ease-in-out;
+                        }
                       `}
+                      onClick={() => {
+                        setSelectedSong(song);
+                        setIsPopupOpen(true);
+                      }}
                     />
                     <MdDeleteOutline
                       size={20}
@@ -638,6 +764,7 @@ const SongList = () => {
                         color: red;
                         cursor: pointer;
                       `}
+                      onClick={() => handleDelete(song._id)}
                     />
                   </div>
                 </div>
@@ -657,7 +784,7 @@ const SongList = () => {
                 grid-template-columns: repeat(3, 1fr);
               }
 
-              @media (max-width: 630px) {
+              @media (max-width: 690px) {
                 grid-template-columns: repeat(2, 1fr);
               }
 
@@ -692,7 +819,7 @@ const SongList = () => {
               top: 50%;
               left: 50%;
               transform: translate(-50%, -50%);
-              background-color: white;
+              background-color: black;
               padding: 2rem;
               border-radius: 10px;
               box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
@@ -726,14 +853,41 @@ const SongList = () => {
                   }
                 `}
               />
-              <h2
-                css={css`
-                  text-align: center;
-                  margin-top: 20px;
-                `}
-              >
-                {selectedSong.title}
-              </h2>
+              {editSong === selectedSong ? (
+                <input
+                  className="text-red-900"
+                  type="text"
+                  value={editSongValues.title}
+                  onChange={(e) =>
+                    setEditSongValues({
+                      ...editSongValues,
+                      title: e.target.value,
+                    })
+                  }
+                  css={css`
+                    background-color: black;
+                    color: white;
+                    border: 1px solid white;
+                    border-radius: 3px;
+                    padding: 0.5rem;
+                    margin-left: auto;
+                    margin-right: auto;
+                    text-align: center;
+                    width: fit-content;
+                    display: flex;
+                  `}
+                />
+              ) : (
+                <h2
+                  css={css`
+                    text-align: center;
+                    margin-top: 20px;
+                  `}
+                >
+                  {selectedSong.title}
+                </h2>
+              )}
+
               <div
                 css={css`
                   display: flex;
@@ -742,7 +896,28 @@ const SongList = () => {
                 `}
               >
                 <p css={ModalTitles}>Artist</p>
-                <p css={ModalTitleDetails}>{selectedSong.artist}</p>
+                {editSong === selectedSong ? (
+                  <input
+                    className="text-red-900"
+                    type="text"
+                    value={editSongValues.artist}
+                    onChange={(e) =>
+                      setEditSongValues({
+                        ...editSongValues,
+                        artist: e.target.value,
+                      })
+                    }
+                    css={css`
+                      background-color: black;
+                      color: white;
+                      border: 1px solid white;
+                      border-radius: 3px;
+                      padding: 0.5rem;
+                    `}
+                  />
+                ) : (
+                  <p css={ModalTitleDetails}>{selectedSong.artist}</p>
+                )}
               </div>
               <div
                 css={css`
@@ -752,7 +927,28 @@ const SongList = () => {
                 `}
               >
                 <p css={ModalTitles}>Album</p>
-                <p css={ModalTitleDetails}>{selectedSong.albumTitle}</p>
+                {editSong === selectedSong ? (
+                  <input
+                    className="text-red-900"
+                    type="text"
+                    value={editSongValues.albumTitle}
+                    onChange={(e) =>
+                      setEditSongValues({
+                        ...editSongValues,
+                        albumTitle: e.target.value,
+                      })
+                    }
+                    css={css`
+                      background-color: black;
+                      color: white;
+                      border: 1px solid white;
+                      border-radius: 3px;
+                      padding: 0.5rem;
+                    `}
+                  />
+                ) : (
+                  <p css={ModalTitleDetails}>{selectedSong.albumTitle}</p>
+                )}
               </div>
               <div
                 css={css`
@@ -762,7 +958,28 @@ const SongList = () => {
                 `}
               >
                 <p css={ModalTitles}>Genre</p>
-                <p css={ModalTitleDetails}>{selectedSong.genre}</p>
+                {editSong === selectedSong ? (
+                  <input
+                    className="text-red-900"
+                    type="text"
+                    value={editSongValues.genre}
+                    onChange={(e) =>
+                      setEditSongValues({
+                        ...editSongValues,
+                        genre: e.target.value,
+                      })
+                    }
+                    css={css`
+                      background-color: black;
+                      color: white;
+                      border: 1px solid white;
+                      border-radius: 3px;
+                      padding: 0.5rem;
+                    `}
+                  />
+                ) : (
+                  <p css={ModalTitleDetails}>{selectedSong.genre}</p>
+                )}
               </div>
               <div
                 css={css`
@@ -772,29 +989,96 @@ const SongList = () => {
                 `}
               >
                 <p css={ModalTitles}>Release Year</p>
-                <p css={ModalTitleDetails}>{selectedSong.releaseYear}</p>
+                {editSong === selectedSong ? (
+                  <input
+                    className="text-red-900"
+                    type="number"
+                    value={editSongValues.releaseYear}
+                    onChange={(e) =>
+                      setEditSongValues({
+                        ...editSongValues,
+                        releaseYear: e.target.value,
+                      })
+                    }
+                    css={css`
+                      background-color: black;
+                      color: white;
+                      border: 1px solid white;
+                      border-radius: 3px;
+                      padding: 0.5rem;
+                    `}
+                  />
+                ) : (
+                  <p css={ModalTitleDetails}>{selectedSong.releaseYear}</p>
+                )}
               </div>
             </div>
-            <button
-              onClick={() => setIsPopupOpen(false)}
-              css={css`
-                padding: 0.5rem 1rem;
-                background-color: #f86adc;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                margin-top: 1rem;
-                transition: background-color 0.5s ease-in;
-                width: 100%;
-                &:hover {
+            {editSong === selectedSong ? (
+              <div>
+                <button
+                  css={css`
+                    padding: 0.5rem 1rem;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin-top: 1rem;
+                    transition: background-color 0.5s ease-in;
+                    width: 100%;
+                    background: rgba(10, 100, 0, 0.3);
+                    backdrop-filter: blur(13px);
+                    -webkit-backdrop-filter: blur(13px);
+                  `}
+                  onClick={handleSaveEdit}
+                >
+                  Save
+                </button>
+                <button
+                  css={css`
+                    padding: 0.5rem 1rem;
+                    background-color: #f86adc;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin-top: 1rem;
+                    transition: background-color 0.5s ease-in;
+                    width: 100%;
+                    background: rgba(159, 22, 22, 0.3);
+                    backdrop-filter: blur(13px);
+                    -webkit-backdrop-filter: blur(13px);
+                  `}
+                  onClick={handleCancelEdit}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                css={css`
+                  padding: 0.5rem 1rem;
                   background-color: #f86adc;
+                  color: white;
+                  border: none;
+                  border-radius: 5px;
+                  cursor: pointer;
+                  margin-top: 1rem;
                   transition: background-color 0.5s ease-in;
-                }
-              `}
-            >
-              Edit
-            </button>
+                  width: 100%;
+                  background: rgba(12, 15, 10, 0.9);
+                  backdrop-filter: blur(13px);
+                  -webkit-backdrop-filter: blur(13px);
+                  &:hover {
+                    background-color: white;
+                    color: black;
+                    transition: all 0.5s ease-in;
+                  }
+                `}
+                onClick={() => handleEdit(selectedSong)}
+              >
+                Edit
+              </button>
+            )}
           </div>
         </>
       )}

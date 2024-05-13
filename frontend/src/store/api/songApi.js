@@ -19,3 +19,21 @@ export const submitSong = async (songData) => {
     throw err;
   }
 };
+
+export const deleteSong = async (songId) => {
+  try {
+    const response = await axios.delete(`${server}/${songId}`);
+    console.log(response)
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+};
+export const updateSong = async (songId, songData) => {
+  try {
+    const response = await axios.put(`${server}/${songId}`, songData);
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+};

@@ -15,9 +15,16 @@ const SongCard = ({ data }) => {
         color: grey;
         box-shadow: 5px black;
         cursor: pointer;
-        &hover {
-          scale: 2px;
+        background: rgba(12, 15, 10, 0.6);
+        backdrop-filter: blur(13px);
+        -webkit-backdrop-filter: blur(13px);
+        border-radius: 20px;
+        padding: 2px;
+        &:hover {
+          scale: 1.05;
+          transition: scale 0.4s ease-in-out;
         }
+
         @media (max-width: 783px) {
           width: 200px;
         }
@@ -40,7 +47,7 @@ const SongCard = ({ data }) => {
       <p
         css={css`
           font-weight: bold;
-          color: black;
+          color: white;
         `}
       >
         {data.title}
@@ -59,7 +66,7 @@ const SongCard = ({ data }) => {
           justify-content: space-between;
           margin-top: 20px;
           font-size: 1rem;
-          color: black;
+          color: white;
         `}
       >
         <CiEdit

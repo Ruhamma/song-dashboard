@@ -5,6 +5,7 @@ const initialState = {
   loading: false,
   success: true,
   error: null,
+  selectedSongId: null,
 };
 
 const songSlice = createSlice({
@@ -29,9 +30,40 @@ const songSlice = createSlice({
     },
     submitSongSuccess(state, action) {
       state.loading = false;
-      state.songs = action.payload;
+      state.songs.push(action.payload);
     },
     submitSongFailure(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    updateSongRequest(state) {
+      state.loading = true;
+      state.error = null;
+    },
+    updateSongSuccess(state, action) {
+      state.loading = false;
+      const updatedSong = action.payload;
+      state.songs = state.songs.map((song) =>
+        song._id === updatedSong._id ? updatedSong : song
+      );
+    },
+    updateSongFailure(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    deleteSongRequest(state) {
+      state.loading = true;
+      state.error = null;
+    },
+
+    deleteSongSuccess(state, action) {
+      state.loading = false;
+      const deletedSongId = action.payload.deletedSongId;
+      state.songs = state.songs.filter((song) => song._id !== deletedSongId);
+    },
+
+    deleteSongFailure(state, action) {
       state.loading = false;
       state.error = action.payload;
     },
@@ -46,4 +78,10 @@ export const {
   submitSongFailure,
   submitSongRequest,
   submitSongSuccess,
+  deleteSongRequest,
+  deleteSongSuccess,
+  deleteSongFailure,
+  updateSongFailure,
+  updateSongSuccess,
+  updateSongRequest,
 } = songSlice.actions;

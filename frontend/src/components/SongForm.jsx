@@ -23,6 +23,8 @@ const SongFormInput = css`
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
+  color: white;
+  background-color: black;
 `;
 const SongFormGenreSelect = css`
   padding: 0.5rem;
@@ -31,6 +33,8 @@ const SongFormGenreSelect = css`
   font-size: 1rem;
   margin-bottom: 1.5rem;
   cursor: pointer;
+  color: white;
+  background-color: black;
 `;
 const SongForm = () => {
   const dispatch = useDispatch();
@@ -120,7 +124,7 @@ const SongForm = () => {
           flex-direction: column;
           gap: 1rem;
           padding: 1rem;
-          background-color: #fff;
+          background-color: black;
           border-radius: 5px;
           position: absolute;
           top: 50%;
@@ -128,6 +132,8 @@ const SongForm = () => {
           transform: translate(-50%, -40%);
           width: 40%;
           z-index: 30;
+          color: white;
+
           @media (max-width: 768px) {
             width: 80%;
             transform: translate(-50%, -40%);
@@ -304,13 +310,24 @@ const SongForm = () => {
             )}
           </div>
           <Button
-            bg="#fab446"
             css={css`
+              width: 100%;
               margin-top: 10px;
+              background: rgba(12, 15, 10, 0.9);
+              backdrop-filter: blur(13px);
+              -webkit-backdrop-filter: blur(13px);
+              transition: all 0.3s ease-in;
+
+              cursor: pointer;
+              &:hover {
+                background-color: white;
+                color: black;
+                transition: all 0.3s ease-in;
+              }
             `}
             type="submit"
           >
-            Button
+            Submit
           </Button>
         </form>
       </div>
