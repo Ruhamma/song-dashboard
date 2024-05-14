@@ -269,7 +269,7 @@ const SongList = () => {
       <div
         css={css`
           margin: auto;
-          height: 80vh;
+          height: 90vh;
           display: flex;
           flex-direction: column;
           align-items: center;

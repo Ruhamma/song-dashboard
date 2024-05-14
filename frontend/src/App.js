@@ -11,9 +11,7 @@ function App() {
   return (
     <Provider store={store}>
       <div
-        css={css`
-          height: 100vh;
-        `}
+      
       >
         <Nav />
         <SongList />
