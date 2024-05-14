@@ -20,7 +20,9 @@ const SongFormHInputContainer = css`
 `;
 const SongFormInput = css`
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid #181818;
+  outline: none;
+  box-shadow: 1px solid white;
   border-radius: 4px;
   font-size: 1rem;
   color: white;
@@ -169,6 +171,7 @@ const SongForm = () => {
               type="text"
               id="title"
               name="title"
+              placeholder="Lighter fluid"
               required
               css={SongFormInput}
               onChange={(e) => setTitle(e.target.value)}
@@ -191,6 +194,7 @@ const SongForm = () => {
               type="text"
               id="artist"
               name="artist"
+              placeholder="Nobigdyl"
               required
               css={SongFormInput}
               onChange={(e) => setArtist(e.target.value)}
@@ -213,6 +217,7 @@ const SongForm = () => {
               type="text"
               id="artist"
               name="artist"
+              placeholder="Fluid"
               required
               css={SongFormInput}
               onChange={(e) => setAlbumTitle(e.target.value)}

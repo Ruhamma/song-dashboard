@@ -159,7 +159,7 @@ const SongList = () => {
   const loading = useSelector((state) => state.song.loading);
   const error = useSelector((state) => state.song.error);
 
-  const tooglePopup = () => {
+  const togglePopup = () => {
     setIsPopupOpen(false);
   };
 
@@ -302,6 +302,29 @@ const SongList = () => {
     setCurrentPage(pageNumber);
   };
 
+  // if (currentSongs.length === 0) {
+  //   return (
+  //     <div
+  //       css={css`
+  //         margin: auto;
+  //         height: 80vh;
+  //         display: flex;
+  //         flex-direction: column;
+  //         align-items: center;
+  //         justify-content: center;
+  //       `}
+  //     >
+  //       <p
+  //         css={css`
+  //           font-size: 2.1rem;
+  //           font-style: bold;
+  //         `}
+  //       >
+  //         Upload songs
+  //       </p>
+  //     </div>
+  //   );
+  // }
   return (
     <div>
       {/* Search and upload section */}
@@ -667,6 +690,8 @@ const SongList = () => {
           }
         `}
       >
+        {/*Song list header*/}
+
         <div
           className="header"
           css={css`
@@ -738,133 +763,48 @@ const SongList = () => {
             ${display === "cards" ? "display: none;" : ""}
           `}
         />
+
+        {/*Song list and card*/}
+
         {display === "list" ? (
           <>
-            {currentSongs.map((song, key) => (
-              <div
-                key={key}
-                css={css`
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  padding: 0.4rem;
-                  padding-top: 1rem;
-                  padding-bottom: 1rem;
-                  border-bottom: 1px solid lightgray;
-                  color: grey;
-                  font-size: 0.9rem;
-                  margin-left: 5rem;
-                  margin-right: 5rem;
-                  transition: background-color 0.4s ease-in-out;
-                  &:hover {
-                    background-color: #282828;
-                    transition: background-color 0.4s ease-in-out;
-                  }
-                  @media (max-width: 548px) {
-                    margin: 1rem 1rem;
-                  }
-                `}
-              >
-                <div
-                  css={css`
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    cursor: pointer;
-                    transition: scale 0.4s ease-in-out;
-
-                    &:hover {
-                      scale: 1.05;
-                      transition: scale 0.4s ease-in-out;
-                    }
-                  `}
-                  onClick={() => {
-                    setSelectedSong(song);
-                    setIsPopupOpen(true);
-                  }}
-                >
-                  <Image
-                    width={90}
-                    height={80}
-                    src={song.image.url}
-                    alt="Song Image"
-                    css={css`
-                      border-radius: 20px;
-                    `}
-                  />
+            {currentSongs.length > 0 ? (
+              <>
+                {currentSongs.map((song, key) => (
                   <div
-                    css={css`
-                      height: fit-content;
-                    `}
-                  >
-                    <p
-                      css={css`
-                        font-size: 1rem;
-                        font-weight: bold;
-                        color: white;
-                      `}
-                    >
-                      {song.title}
-                    </p>
-                    <p
-                      css={css`
-                        font-size: 0.9rem;
-                      `}
-                    >
-                      {song.artist}
-                    </p>
-                  </div>
-                </div>
-                <div
-                  css={css`
-                    display: flex;
-                    gap: 60px;
-                  `}
-                >
-                  <p
-                    css={css`
-                      display: block;
-                      @media (max-width: 768px) {
-                        display: none;
-                      }
-                    `}
-                  >
-                    {song.albumTitle}
-                  </p>
-                  <p
-                    css={css`
-                      @media (max-width: 375px) {
-                        display: none;
-                      }
-                    `}
-                  >
-                    {song.genre}
-                  </p>
-                  <p
-                    css={css`
-                      display: block;
-                      @media (max-width: 768px) {
-                        display: none;
-                      }
-                    `}
-                  >
-                    {song.releaseYear}
-                  </p>
-                  <div
+                    key={key}
                     css={css`
                       display: flex;
-                      gap: 10px;
-                      font-size: 1rem;
-                      color: white;
+                      justify-content: space-between;
+                      align-items: center;
+                      padding: 0.4rem;
+                      padding-top: 1rem;
+                      padding-bottom: 1rem;
+                      border-bottom: 1px solid lightgray;
+                      color: grey;
+                      font-size: 0.9rem;
+                      margin-left: 5rem;
+                      margin-right: 5rem;
+                      transition: background-color 0.4s ease-in-out;
+                      &:hover {
+                        background-color: #282828;
+                        transition: background-color 0.4s ease-in-out;
+                      }
+                      @media (max-width: 548px) {
+                        margin: 1rem 1rem;
+                      }
                     `}
                   >
-                    <CiEdit
-                      size={20}
+                    <div
                       css={css`
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
                         cursor: pointer;
-                        border-radius: 50%;
+                        transition: scale 0.4s ease-in-out;
+
                         &:hover {
-                          scale: 1.1;
+                          scale: 1.05;
                           transition: scale 0.4s ease-in-out;
                         }
                       `}
@@ -872,19 +812,132 @@ const SongList = () => {
                         setSelectedSong(song);
                         setIsPopupOpen(true);
                       }}
-                    />
-                    <MdDeleteOutline
-                      size={20}
+                    >
+                      <Image
+                        width={90}
+                        height={80}
+                        src={song.image.url}
+                        alt="Song Image"
+                        css={css`
+                          border-radius: 20px;
+                        `}
+                      />
+                      <div
+                        css={css`
+                          height: fit-content;
+                        `}
+                      >
+                        <p
+                          css={css`
+                            font-size: 1rem;
+                            font-weight: bold;
+                            color: white;
+                          `}
+                        >
+                          {song.title}
+                        </p>
+                        <p
+                          css={css`
+                            font-size: 0.9rem;
+                          `}
+                        >
+                          {song.artist}
+                        </p>
+                      </div>
+                    </div>
+                    <div
                       css={css`
-                        color: red;
-                        cursor: pointer;
+                        display: flex;
+                        gap: 60px;
                       `}
-                      onClick={() => handleDelete(song._id)}
-                    />
+                    >
+                      <p
+                        css={css`
+                          display: block;
+                          @media (max-width: 768px) {
+                            display: none;
+                          }
+                        `}
+                      >
+                        {song.albumTitle}
+                      </p>
+                      <p
+                        css={css`
+                          @media (max-width: 375px) {
+                            display: none;
+                          }
+                        `}
+                      >
+                        {song.genre}
+                      </p>
+                      <p
+                        css={css`
+                          display: block;
+                          @media (max-width: 768px) {
+                            display: none;
+                          }
+                        `}
+                      >
+                        {song.releaseYear}
+                      </p>
+                      <div
+                        css={css`
+                          display: flex;
+                          gap: 10px;
+                          font-size: 1rem;
+                          color: white;
+                        `}
+                      >
+                        <CiEdit
+                          size={20}
+                          css={css`
+                            cursor: pointer;
+                            border-radius: 50%;
+                            &:hover {
+                              scale: 1.1;
+                              transition: scale 0.4s ease-in-out;
+                            }
+                          `}
+                          onClick={() => {
+                            setSelectedSong(song);
+                            setIsPopupOpen(true);
+                          }}
+                        />
+                        <MdDeleteOutline
+                          size={20}
+                          css={css`
+                            color: red;
+                            cursor: pointer;
+                          `}
+                          onClick={() => handleDelete(song._id)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
+              </>
+            ) : (
+              <div
+                css={css`
+                  margin: auto;
+                  height: 20vh;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                `}
+              >
+                <p
+                  css={css`
+                    font-size: 2.1rem;
+                    font-style: bold;
+                  `}
+                >
+                  Upload songs
+                </p>
               </div>
-            ))}
+            )}
+
             <div
               css={css`
                 margin: 10px auto;
@@ -931,17 +984,41 @@ const SongList = () => {
                 }
               `}
             >
-              {currentSongs.map((song, key) => (
+              {currentSongs.length > 0 ? (
+                <>
+                  {currentSongs.map((song, key) => (
+                    <div
+                      onClick={() => {
+                        setSelectedSong(song);
+                        setIsPopupOpen(true);
+                      }}
+                      key={key}
+                    >
+                      <SongCard data={song} />
+                    </div>
+                  ))}
+                </>
+              ) : (
                 <div
-                  onClick={() => {
-                    setSelectedSong(song);
-                    setIsPopupOpen(true);
-                  }}
-                  key={key}
+                  css={css`
+                    margin: auto;
+                    height: 20vh;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                  `}
                 >
-                  <SongCard data={song} />
+                  <p
+                    css={css`
+                      font-size: 2.1rem;
+                      font-style: bold;
+                    `}
+                  >
+                    Upload songs
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
             <div
               css={css`
@@ -968,12 +1045,14 @@ const SongList = () => {
           </>
         )}
       </div>
+
+      {/*Edit song modal*/}
       {isPopupOpen && selectedSong && (
         <>
           <div
             css={SongFormOverlay}
             className={isPopupOpen ? "open" : ""}
-            onClick={tooglePopup}
+            onClick={togglePopup}
           />
           <div
             css={css`
@@ -991,6 +1070,7 @@ const SongList = () => {
                 width: 80%;
               }
             `}
+            className="edit-modal"
           >
             <div>
               <Image
