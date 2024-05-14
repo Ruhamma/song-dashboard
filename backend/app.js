@@ -5,7 +5,7 @@ const app = express();
 const songsRouter = require("./routes/song");
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://song-dashboard-vx1n.vercel.app",
 
     credentials: true,
   })

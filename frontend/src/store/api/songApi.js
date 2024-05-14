@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const server = "http://localhost:5000/api/songs";
+const server = "https://song-dashboard-zeta.vercel.app/api/songs";
 
 export const fetchSongsApi = async () => {
   try {
@@ -23,7 +23,7 @@ export const submitSong = async (songData) => {
 export const deleteSong = async (songId) => {
   try {
     const response = await axios.delete(`${server}/${songId}`);
-    console.log(response)
+    console.log(response);
     return response.data;
   } catch (err) {
     throw err;
