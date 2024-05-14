@@ -6,7 +6,7 @@ import { CiEdit } from "react-icons/ci";
 import { Image } from "rebass";
 import { MdDeleteOutline } from "react-icons/md";
 
-const SongCard = ({ data }) => {
+const SongCard = ({ data, onEdit, onDelete }) => {
   return (
     <div
       css={css`
@@ -74,6 +74,7 @@ const SongCard = ({ data }) => {
           css={css`
             cursor: pointer;
           `}
+          onClick={onEdit}
         />
         <MdDeleteOutline
           size={20}
@@ -81,6 +82,7 @@ const SongCard = ({ data }) => {
             color: red;
             cursor: pointer;
           `}
+          onClick={() => onDelete(data._id)}
         />
       </div>
     </div>

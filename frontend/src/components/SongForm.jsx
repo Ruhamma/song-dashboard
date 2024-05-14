@@ -12,6 +12,8 @@ import {
 
 import { submitSong } from "../store/api/songApi";
 import { toast } from "sonner";
+import { IoMdClose } from "react-icons/io";
+
 const SongFormHInputContainer = css`
   display: flex;
   flex-direction: column;
@@ -38,7 +40,7 @@ const SongFormGenreSelect = css`
   color: white;
   background-color: black;
 `;
-const SongForm = () => {
+const SongForm = ({toggleForm}) => {
   const dispatch = useDispatch();
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
@@ -135,7 +137,6 @@ const SongForm = () => {
           width: 40%;
           z-index: 30;
           color: white;
-
           @media (max-width: 768px) {
             width: 80%;
             transform: translate(-50%, -40%);
@@ -143,6 +144,17 @@ const SongForm = () => {
         `}
         className="form"
       >
+        <IoMdClose
+          css={css`
+            color: white;
+            position: absolute;
+            font-size: 1.2rem;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+          `}
+          onClick={toggleForm}
+        />
         <h2
           css={css`
             text-align: center;

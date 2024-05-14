@@ -24,6 +24,7 @@ import {
 } from "../store/slices/songSlice";
 import { deleteSong, fetchSongsApi, updateSong } from "../store/api/songApi";
 import { toast } from "sonner";
+import { IoMdClose } from "react-icons/io";
 
 // Overlays
 
@@ -559,7 +560,7 @@ const SongList = () => {
               onClick={toggleForm}
             />
 
-            <SongForm />
+            <SongForm toggleForm={toggleForm} />
           </>
         )}
       </div>
@@ -990,11 +991,14 @@ const SongList = () => {
                     <div
                       onClick={() => {
                         setSelectedSong(song);
-                        setIsPopupOpen(true);
                       }}
                       key={key}
                     >
-                      <SongCard data={song} />
+                      <SongCard
+                        data={song}
+                        onEdit={() => setIsPopupOpen(true)}
+                        onDelete={handleDelete}
+                      />
                     </div>
                   ))}
                 </>
@@ -1072,6 +1076,17 @@ const SongList = () => {
             `}
             className="edit-modal"
           >
+            <IoMdClose
+              css={css`
+                color: white;
+                position: absolute;
+                font-size: 1.2rem;
+                top: 6px;
+                right: 10px;
+                cursor: pointer;
+              `}
+              onClick={togglePopup}
+            />
             <div>
               <Image
                 height={280}
