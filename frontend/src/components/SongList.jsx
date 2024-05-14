@@ -1,9 +1,8 @@
 /** @jsxImportSource @emotion/react */
 
 import { css } from "@emotion/react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
-import { IoIosSearch } from "react-icons/io";
 import { AiOutlineSearch } from "react-icons/ai";
 import { CiCircleList, CiEdit } from "react-icons/ci";
 import { BsGrid3X3Gap } from "react-icons/bs";
@@ -24,6 +23,10 @@ import {
   updateSongFailure,
 } from "../store/slices/songSlice";
 import { deleteSong, fetchSongsApi, updateSong } from "../store/api/songApi";
+import { toast } from "sonner";
+
+// Overlays
+
 const SongFormOverlay = css`
   position: fixed;
   top: 0;
@@ -49,6 +52,11 @@ const CategoryOverlay = css`
   opacity: 0.3;
   z-index: 1;
   border-radius: 20px;
+  transition: all 0.4s ease-in-out;
+  &:hover {
+    opacity: 0.7;
+    transition: all 0.4s ease-in-out;
+  }
 `;
 const CategoryContainer = ({ backgroundImageUrl }) => css`
   background-image: url("${backgroundImageUrl}");
@@ -79,6 +87,8 @@ const CategoryContainer = ({ backgroundImageUrl }) => css`
     width: 60px;
   }
 `;
+
+// Title styles
 const ModalTitles = css`
   color: grey;
   font-size: 1.1rem;
@@ -91,85 +101,33 @@ const ModalTitleDetails = css`
     font-size: 0.9rem;
   }
 `;
-const dummySongData = [
-  {
-    title: "Bohemian Rhapsody",
-    artist: "Queen",
-    albumTitle: "A Night at the Opera",
-    imageUrl: {
-      public_id: "some_unique_identifier_1",
-      url: "/images/pop.jpg",
-    },
-    genre: "Rock",
-    releaseYear: 1975,
-  },
-  {
-    title: "Imagine",
-    artist: "John Lennon",
-    albumTitle: "Imagine",
-    imageUrl: {
-      public_id: "some_unique_identifier_2",
-      url: "/images/pop.jpg",
-    },
-    genre: "Pop",
-    releaseYear: 1971,
-  },
-  {
-    title: "Imagine",
-    artist: "John Lennon",
-    albumTitle: "Imagine",
-    imageUrl: {
-      public_id: "some_unique_identifier_2",
-      url: "/images/pop.jpg",
-    },
-    genre: "Pop",
-    releaseYear: 1971,
-  },
-  {
-    title: "Imagine",
-    artist: "John Lennon",
-    albumTitle: "Imagine",
-    imageUrl: {
-      public_id: "some_unique_identifier_2",
-      url: "/images/pop.jpg",
-    },
-    genre: "Pop",
-    releaseYear: 1971,
-  },
-  {
-    title: "Imagine",
-    artist: "John Lennon",
-    albumTitle: "Imagine",
-    imageUrl: {
-      public_id: "some_unique_identifier_2",
-      url: "/images/pop.jpg",
-    },
-    genre: "Pop",
-    releaseYear: 1971,
-  },
-  {
-    title: "Imagine",
-    artist: "John Lennon",
-    albumTitle: "Imagine",
-    imageUrl: {
-      public_id: "some_unique_identifier_2",
-      url: "/images/pop.jpg",
-    },
-    genre: "Pop",
-    releaseYear: 1971,
-  },
-  {
-    title: "Imagine",
-    artist: "John Lennon",
-    albumTitle: "Imagine",
-    imageUrl: {
-      public_id: "some_unique_identifier_2",
-      url: "/images/pop.jpg",
-    },
-    genre: "Pop",
-    releaseYear: 1971,
-  },
-];
+
+const containerStyles = css`
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  border-radius: 5px;
+`;
+
+const activeStyles = css`
+  color: white;
+  background: rgba(1, 1, 1, 0.2);
+  backdrop-filter: blur(13px);
+  -webkit-backdrop-filter: blur(13px);
+`;
+
+const inactiveStyles = css`
+  background: rgba(245, 255, 255, 0.6);
+  backdrop-filter: blur(13px);
+  -webkit-backdrop-filter: blur(13px);
+`;
 
 const initialState = {
   title: "",
@@ -178,20 +136,29 @@ const initialState = {
   releaseYear: 2024,
   genre: "pop",
 };
+
 const SongList = () => {
   const [selectedSong, setSelectedSong] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [display, setDisplay] = useState("list");
-  const [showPopup, setShowPopup] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editSong, setEditSong] = useState(null);
   const [editSongValues, setEditSongValues] = useState(initialState);
   const [editImages, setEditImages] = useState(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchData, setSearchData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTab, setSelectedTab] = useState("songs");
+
   const dispatch = useDispatch();
+
+  // States
   const songs = useSelector((state) => state.song.songs);
   const loading = useSelector((state) => state.song.loading);
   const error = useSelector((state) => state.song.error);
+
   const tooglePopup = () => {
     setIsPopupOpen(false);
   };
@@ -199,6 +166,37 @@ const SongList = () => {
   const toggleForm = () => {
     setIsOpen(!isOpen);
   };
+
+  // Search functionality
+  const handleSearchClick = () => {
+    setIsSearchOpen(!isSearchOpen);
+  };
+  const handleSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+
+    const filteredProducts =
+      songs &&
+      songs.filter((product) =>
+        product.title.toLowerCase().includes(term.toLowerCase())
+      );
+    setSearchData(filteredProducts);
+  };
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchData(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -214,6 +212,7 @@ const SongList = () => {
     fetchSongs();
   }, [dispatch]);
 
+  // Edit functionality
   const handleEdit = (song) => {
     setEditSong(song);
     setEditSongValues({
@@ -226,8 +225,6 @@ const SongList = () => {
     });
     setEditImages(song.image);
   };
-
-  
 
   const handleSaveEdit = async () => {
     const songData = {
@@ -242,7 +239,8 @@ const SongList = () => {
       dispatch(updateSongRequest());
       const response = await updateSong(editSongValues.id, songData);
       dispatch(updateSongSuccess(response));
-      console.log("Song uploaded successfully!");
+      toast.success("Song edited successfully!");
+
       setEditSong(null);
     } catch (err) {
       dispatch(updateSongFailure(err.toString()));
@@ -251,29 +249,59 @@ const SongList = () => {
   const handleCancelEdit = () => {
     setEditSong(null);
   };
+
+  // Delete functionality
   const handleDelete = async (id) => {
     try {
       dispatch(deleteSongRequest());
       const response = await deleteSong(id);
       dispatch(deleteSongSuccess(response));
 
-      console.log("Song deleted successfully!");
+      toast.success("Song deleted successfully!");
     } catch (err) {
       dispatch(deleteSongFailure(err.toString()));
     }
   };
+
+  // Loader
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div
+        css={css`
+          margin: auto;
+          height: 80vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        `}
+      >
+        <div className="loader"></div>
+        <p>Loading</p>
+      </div>
+    );
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // Filter logic
   const filteredSongs = selectedCategory
     ? songs.filter(
         (song) => song.genre.toLowerCase() === selectedCategory.toLowerCase()
       )
     : songs;
+
+  // Pagination
+  const songsPerPage = 10;
+  const indexOfLastProduct = currentPage * songsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - songsPerPage;
+
+  const currentSongs =
+    selectedTab === "songs"
+      ? filteredSongs.slice(indexOfFirstProduct, indexOfLastProduct)
+      : [];
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div>
       {/* Search and upload section */}
@@ -318,7 +346,15 @@ const SongList = () => {
               setDisplay("list");
             }}
           >
-            <CiCircleList />
+            <CiCircleList
+              css={css`
+                &:hover {
+                  scale: 1.1;
+                  transition: scale 0.4s ease-in-out;
+                  color: white;
+                }
+              `}
+            />
             <p
               css={css`
                 font-weight: bold;
@@ -371,6 +407,7 @@ const SongList = () => {
         >
           <div
             css={css`
+              position: relative;
               display: flex;
               align-items: center;
               padding-left: 1rem;
@@ -386,8 +423,9 @@ const SongList = () => {
                 display: none;
               }
             `}
+            ref={searchRef}
           >
-            <AiOutlineSearch color="white" />
+            <AiOutlineSearch color="white" onClick={handleSearchClick} />
             <input
               type="text"
               id="search"
@@ -399,7 +437,64 @@ const SongList = () => {
                 background-color: black;
                 color: white;
               `}
+              value={searchTerm}
+              onChange={handleSearchChange}
             />
+            {searchData && searchData.length !== 0 ? (
+              <div
+                css={css`
+                  position: absolute;
+                  top: 40px;
+                  left: 0;
+                  width: 100%;
+                  max-height: 50vh;
+                  overflow-y: scroll;
+                  box-shadow: 0px 2px 2px rgba(1, 1, 1, 0.9);
+                  z-index: 9;
+                  padding: 4px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 2px;
+                  background: rgba(1, 1, 1, 0.6);
+                  backdrop-filter: blur(13px);
+                  -webkit-backdrop-filter: blur(13px);
+                `}
+              >
+                {searchData &&
+                  searchData.map((i, index) => {
+                    return (
+                      <div>
+                        <div
+                          css={css`
+                            width: 100%;
+                            display: flex;
+                            align-items: flex-start;
+                            padding-top: 0.75rem;
+                            gap: 1rem;
+                            cursor: pointer;
+                          `}
+                          onClick={() => {
+                            setSelectedSong(i);
+                            setIsPopupOpen(true);
+                          }}
+                        >
+                          <img
+                            src={`${i.image.url}`}
+                            alt=""
+                            css={css`
+                              width: 50px;
+                              height: 60px;
+                              margin-right: 10px;
+                              margin-left: 4px;
+                            `}
+                          />
+                          <p>{i.title}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            ) : null}
           </div>
           <div
             css={css`
@@ -521,7 +616,7 @@ const SongList = () => {
         </div>
         <div
           css={CategoryContainer({ backgroundImageUrl: "/images/rock.jpg" })}
-          onClick={() => setSelectedCategory("Rock")}
+          onClick={() => setSelectedCategory("Rap")}
         >
           <div css={CategoryOverlay} />
           <p
@@ -532,11 +627,31 @@ const SongList = () => {
               }
             `}
           >
-            Rock
+            Rap
           </p>
         </div>
       </div>
 
+      <p
+        css={css`
+          font-size: 0.8rem;
+          font-style: italic;
+          padding-left: 6rem;
+          color: grey;
+          text-decoration: underline;
+          margin-bottom: 5px;
+          cursor: pointer;
+          transition: all 0.2s ease-in-out;
+
+          &:hover {
+            color: white;
+            transition: all 0.2s ease-in-out;
+          }
+        `}
+        onClick={() => setSelectedCategory("")}
+      >
+        Clear categories(Show all)
+      </p>
       {/* Song list section */}
       <div
         css={css`
@@ -610,7 +725,7 @@ const SongList = () => {
                 opacity: 0;
               `}
             >
-              Release{" "}
+              year{" "}
             </p>
           </div>
         </div>
@@ -625,7 +740,7 @@ const SongList = () => {
         />
         {display === "list" ? (
           <>
-            {filteredSongs.map((song, key) => (
+            {currentSongs.map((song, key) => (
               <div
                 key={key}
                 css={css`
@@ -770,40 +885,87 @@ const SongList = () => {
                 </div>
               </div>
             ))}
+            <div
+              css={css`
+                margin: 10px auto;
+                width: fit-content;
+              `}
+            >
+              {Array.from(
+                { length: Math.ceil(filteredSongs.length / songsPerPage) },
+                (_, index) => (
+                  <button
+                    key={index}
+                    css={[
+                      containerStyles,
+                      currentPage === index + 1 ? activeStyles : inactiveStyles,
+                    ]}
+                    onClick={() => paginate(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                )
+              )}
+            </div>
           </>
         ) : (
-          <div
-            css={css`
-              display: grid;
-              grid-template-columns: repeat(4, 1fr);
-              grid-row-gap: 40px;
-              padding: 10px;
-              place-items: center;
+          <>
+            <div
+              css={css`
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                grid-row-gap: 40px;
+                padding: 10px;
+                place-items: center;
 
-              @media (max-width: 1060px) {
-                grid-template-columns: repeat(3, 1fr);
-              }
+                @media (max-width: 1060px) {
+                  grid-template-columns: repeat(3, 1fr);
+                }
 
-              @media (max-width: 690px) {
-                grid-template-columns: repeat(2, 1fr);
-              }
+                @media (max-width: 690px) {
+                  grid-template-columns: repeat(2, 1fr);
+                }
 
-              @media (max-width: 340px) {
-                grid-template-columns: repeat(1, 1fr);
-              }
-            `}
-          >
-            {songs.map((song, key) => (
-              <div
-                onClick={() => {
-                  setSelectedSong(song);
-                  setIsPopupOpen(true);
-                }}
-              >
-                <SongCard data={song} />
-              </div>
-            ))}
-          </div>
+                @media (max-width: 340px) {
+                  grid-template-columns: repeat(1, 1fr);
+                }
+              `}
+            >
+              {currentSongs.map((song, key) => (
+                <div
+                  onClick={() => {
+                    setSelectedSong(song);
+                    setIsPopupOpen(true);
+                  }}
+                  key={key}
+                >
+                  <SongCard data={song} />
+                </div>
+              ))}
+            </div>
+            <div
+              css={css`
+                margin: 10px auto;
+                width: fit-content;
+              `}
+            >
+              {Array.from(
+                { length: Math.ceil(filteredSongs.length / songsPerPage) },
+                (_, index) => (
+                  <button
+                    key={index}
+                    css={[
+                      containerStyles,
+                      currentPage === index + 1 ? activeStyles : inactiveStyles,
+                    ]}
+                    onClick={() => paginate(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                )
+              )}
+            </div>
+          </>
         )}
       </div>
       {isPopupOpen && selectedSong && (

@@ -11,7 +11,7 @@ import {
 } from "../store/slices/songSlice";
 
 import { submitSong } from "../store/api/songApi";
-
+import { toast } from "sonner";
 const SongFormHInputContainer = css`
   display: flex;
   flex-direction: column;
@@ -53,7 +53,7 @@ const SongForm = () => {
     "Electronic",
     "R&B",
     "Country",
-    "Classical",
+    "Rap",
     "Jazz",
     "Other",
   ];
@@ -110,7 +110,7 @@ const SongForm = () => {
       setGenre("");
       setReleaseYear("");
 
-      console.log("Song uploaded successfully!");
+      toast("Song uploaded successfully!");
     } catch (err) {
       dispatch(submitSongFailure(err.toString()));
     }
@@ -139,6 +139,7 @@ const SongForm = () => {
             transform: translate(-50%, -40%);
           }
         `}
+        className="form"
       >
         <h2
           css={css`

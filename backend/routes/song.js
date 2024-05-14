@@ -77,6 +77,7 @@ songRouter.put("/:id", async (req, res) => {
 //Delete a song
 
 songRouter.delete("/:id", async (req, res) => {
+  const { id } = req.params;
   try {
     const song = await Song.findByIdAndDelete(id);
     if (!song) {
